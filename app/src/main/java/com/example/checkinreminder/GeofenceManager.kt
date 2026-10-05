@@ -71,14 +71,22 @@ object GeofenceManager {
             .build()
         val client = LocationServices.getGeofencingClient(appContext)
         client.removeGeofences(pendingIntent).addOnCompleteListener {
-            client.addGeofences(request, pendingIntent)
-                .addOnSuccessListener {
-                    preferences.edit().putBoolean(GEOFENCE_ENABLED_KEY, true).apply()
-                    onResult("打卡围栏已启用：公司大门 200 米")
-                }
-                .addOnFailureListener { error ->
-                    onResult("启用打卡围栏失败：${error.localizedMessage ?: "未知错误"}")
-                }
+            // Replacing the old fence starts from a disabled state. Only add success enables it.
+            preferences.edit().putBoolean(GEOFENCE_ENABLED_KEY, false).commit()
+            try {
+                client.addGeofences(request, pendingIntent)
+                    .addOnSuccessListener {
+                        preferences.edit().putBoolean(GEOFENCE_ENABLED_KEY, true).apply()
+                        onResult("打卡围栏已启用：公司大门 200 米")
+                    }
+                    .addOnFailureListener { error ->
+                        preferences.edit().putBoolean(GEOFENCE_ENABLED_KEY, false).commit()
+                        onResult("启用打卡围栏失败：${error.localizedMessage ?: "未知错误"}")
+                    }
+            } catch (error: Exception) {
+                preferences.edit().putBoolean(GEOFENCE_ENABLED_KEY, false).commit()
+                onResult("启用打卡围栏失败：${error.localizedMessage ?: "未知错误"}")
+            }
         }
     }
 

@@ -11,6 +11,7 @@ class BootReceiver : BroadcastReceiver() {
         val preferences = context.getSharedPreferences(
             GeofenceManager.PREFERENCES_NAME, Context.MODE_PRIVATE
         )
+        if (!preferences.getBoolean(GeofenceManager.GEOFENCE_ENABLED_KEY, false)) return
         if (!preferences.contains(GeofenceManager.COMPANY_LAT_KEY) ||
             !preferences.contains(GeofenceManager.COMPANY_LNG_KEY)
         ) return
